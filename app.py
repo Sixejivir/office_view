@@ -10,6 +10,8 @@ CORS(app)
 UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
+SOFFICE_PATH = '/usr/bin/soffice'  # Ubuntu container içindeki path
+
 @app.route('/convert-to-pdf', methods=['POST'])
 def convert_to_pdf():
     if 'file' not in request.files:
@@ -29,7 +31,7 @@ def convert_to_pdf():
     try:
         subprocess.run(
             [
-                'soffice',
+                SOFFICE_PATH,
                 '--headless',
                 '--convert-to',
                 'pdf',
@@ -55,6 +57,3 @@ def convert_to_pdf():
     finally:
         if os.path.exists(pptx_path):
             os.remove(pptx_path)
-
-if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
