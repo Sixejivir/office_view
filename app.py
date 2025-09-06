@@ -1,8 +1,10 @@
 import os
 import subprocess
 from flask import Flask, request, send_file, jsonify
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
 UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -34,6 +36,22 @@ def convert_to_pdf():
             ],
             check=True,
             capture_output=True,
+            text=True
+        )
+
+        return send_file(pdf_output_path, as_attachment=True)
+
+    except subprocess.CalledProcessError as e:
+        print(f"Hata oluştu: {e.stdout} {e.stderr}")
+        return jsonify({'error': 'Dönüşümde bir aksilik oldu'}), 500
+
+    finally:
+        os.remove(pptx_path)
+        if os.path.exists(pdf_output_path):
+            os.remove(pdf_output_path)
+
+if __name__ == '__main__':
+    app.run(debug=True, port=5000)
             text=True
         )
 
