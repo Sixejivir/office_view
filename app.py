@@ -33,16 +33,21 @@ def convert_to_pdf():
     pdf_output_path = os.path.join(UPLOAD_FOLDER, f"{unique_id}.pdf")
 
     try:
+        # Excel dosyaları için özel parametre
+        convert_cmd = [
+            SOFFICE_PATH,
+            '--headless',
+            '--convert-to',
+            'pdf',
+            input_path,
+            '--outdir',
+            UPLOAD_FOLDER
+        ]
+        if file_ext in ('.xls', '.xlsx'):
+            convert_cmd[3] = 'pdf:calc_pdf_Export'
+
         subprocess.run(
-            [
-                SOFFICE_PATH,
-                '--headless',
-                '--convert-to',
-                'pdf',
-                input_path,
-                '--outdir',
-                UPLOAD_FOLDER
-            ],
+            convert_cmd,
             check=True,
             capture_output=True,
             text=True
