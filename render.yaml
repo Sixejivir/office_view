@@ -1,7 +1,7 @@
 services:
   - type: web
-    name: your-app-name-here # Buraya uygulamanızın ismini yazın
+    name: office-view
     env: python
     buildCommand: "pip install -r requirements.txt"
     startCommand: "gunicorn --bind 0.0.0.0:$PORT app:app"
-    autoDeploy: false # GitHub Actions kullanacağımız için false yapıyoruz
+    autoDeploy: false
