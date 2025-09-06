@@ -2,6 +2,7 @@ import os
 import subprocess
 from flask import Flask, request, send_file, jsonify
 from flask_cors import CORS
+from uuid import uuid4
 
 app = Flask(__name__)
 CORS(app)
@@ -18,15 +19,17 @@ def convert_to_pdf():
     if file.filename == '':
         return jsonify({'error': 'Dosya adı boş'}), 400
 
-    pptx_path = os.path.join(UPLOAD_FOLDER, file.filename)
+    unique_id = str(uuid4())
+    file_ext = os.path.splitext(file.filename)[1]
+    pptx_path = os.path.join(UPLOAD_FOLDER, f"{unique_id}{file_ext}")
     file.save(pptx_path)
 
-    pdf_output_path = os.path.splitext(pptx_path)[0] + '.pdf'
+    pdf_output_path = os.path.join(UPLOAD_FOLDER, f"{unique_id}.pdf")
 
     try:
         subprocess.run(
             [
-                'libreoffice',
+                'soffice',
                 '--headless',
                 '--convert-to',
                 'pdf',
@@ -39,16 +42,19 @@ def convert_to_pdf():
             text=True
         )
 
+        if not os.path.exists(pdf_output_path):
+            app.logger.error(f"PDF oluşturulamadı. stdout: {pptx_path}")
+            return jsonify({'error': 'PDF oluşturulamadı'}), 500
+
         return send_file(pdf_output_path, as_attachment=True)
 
     except subprocess.CalledProcessError as e:
-        print(f"Hata oluştu: {e.stdout} {e.stderr}")
+        app.logger.error(f"LibreOffice hatası: {e.stdout} {e.stderr}")
         return jsonify({'error': 'Dönüşümde bir aksilik oldu'}), 500
 
     finally:
-        os.remove(pptx_path)
-        if os.path.exists(pdf_output_path):
-            os.remove(pdf_output_path)
+        if os.path.exists(pptx_path):
+            os.remove(pptx_path)
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(debug=True, host='0.0.0.0', port=5000)
