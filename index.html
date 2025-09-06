@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PowerPoint Görüntüleyici</title>
+    <style>
+        body { font-family: Arial; display:flex; flex-direction:column; align-items:center; padding:20px; background:#f0f0f0; }
+        .container { background:white; padding:20px; border-radius:8px; box-shadow:0 4px 8px rgba(0,0,0,0.1); text-align:center; }
+        input[type="file"] { margin-bottom:10px; }
+        button { padding:10px 20px; font-size:16px; cursor:pointer; border:none; background:#007bff; color:white; border-radius:5px; }
+        #status { margin-top:15px; font-weight:bold; color:#333; }
+        #pdfViewer { margin-top:20px; width:100%; height:600px; border:1px solid #ccc; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>PowerPoint Dosyasını PDF'e Dönüştür</h1>
+    <input type="file" id="pptx-file" accept=".pptx">
+    <button id="convert-button">Dönüştür</button>
+    <p id="status"></p>
+</div>
+
+<embed id="pdfViewer" type="application/pdf">
+
+<script>
+const fileInput = document.getElementById('pptx-file');
+const convertButton = document.getElementById('convert-button');
+const statusText = document.getElementById('status');
+const pdfViewer = document.getElementById('pdfViewer');
+
+convertButton.addEventListener('click', async () => {
+    const file = fileInput.files[0];
+    if (!file) { 
+        statusText.textContent = 'Lütfen bir dosya seçin.'; 
+        return; 
+    }
+
+    statusText.textContent = 'Dönüştürülüyor... Lütfen bekleyin.';
+    convertButton.disabled = true;
+    pdfViewer.src = '';
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+        const response = await fetch('https://office-view-docker.onrender.com/convert-to-pdf', {
+            method: 'POST',
+            body: formData,
+        });
+
+        if (!response.ok) throw new Error(`Sunucudan hata: ${response.statusText}`);
+
+        const pdfBlob = await response.blob();
+        pdfViewer.src = URL.createObjectURL(pdfBlob);
+        statusText.textContent = 'Dönüştürme başarılı!';
+    } catch (error) {
+        console.error('Hata:', error);
+        statusText.textContent = `Hata oluştu: ${error.message}`;
+    } finally { 
+        convertButton.disabled = false; 
+    }
+});
+</script>
+
+</body>
+</html>
