@@ -11,9 +11,10 @@ UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 SOFFICE_PATH = '/usr/bin/soffice'  # Ubuntu container içindeki path
-ALLOWED_EXTENSIONS = ('.ppt', '.pptx', '.doc', '.docx', '.xls', '.xlsx')
+# TXT uzantısı da listeye eklendi
+ALLOWED_EXTENSIONS = ('.ppt', '.pptx', '.doc', '.docx', '.xls', '.xlsx', '.txt')
 
-@app.route('/convert-to-pdf', methods=['POST'])
+@app.route('/convert-to-pdf', methods=['POST')
 def convert_to_pdf():
     if 'file' not in request.files:
         return jsonify({'error': 'Dosya bulunamadı'}), 400
@@ -43,8 +44,12 @@ def convert_to_pdf():
             '--outdir',
             UPLOAD_FOLDER
         ]
+
         if file_ext in ('.xls', '.xlsx'):
+            # Excel dosyaları için LibreOffice'in özel dönüştürme parametresini kullanırız
             convert_cmd[3] = 'pdf:calc_pdf_Export'
+        
+        # TXT dosyaları için ek bir parametreye gerek yoktur, varsayılan dönüştürücü yeterlidir.
 
         subprocess.run(
             convert_cmd,
@@ -66,3 +71,5 @@ def convert_to_pdf():
     finally:
         if os.path.exists(input_path):
             os.remove(input_path)
+        if os.path.exists(pdf_output_path):
+            os.remove(pdf_output_path)
