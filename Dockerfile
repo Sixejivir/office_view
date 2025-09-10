@@ -6,10 +6,16 @@ RUN apt-get update && apt-get install -y \
     libreoffice-core \
     libreoffice-writer \
     libreoffice-impress \
-    libreoffice-calc \    # Excel desteği için Calc ekledik
-    libxrender1 libxext6 libx11-6 \
-    fonts-dejavu fonts-liberation fonts-noto \
-    curl git unzip && \
+    libreoffice-calc \
+    libxrender1 \
+    libxext6 \
+    libx11-6 \
+    fonts-dejavu \
+    fonts-liberation \
+    fonts-noto \
+    curl \
+    git \
+    unzip && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Çalışma dizini
